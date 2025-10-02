@@ -30,23 +30,46 @@ pols_df=
 ```{r}
 snp_df=
   read_csv("data/snp.csv") |> 
-  janitor::clean_names()|> 
-  separate(date, into = c("year","month","day")) |>
+  janitor::clean_names() |> 
+  separate(date, into = c("month","day","year"), convert = TRUE)|>
+  mutate(year = ifelse(year < 50, year + 2000, 
+                       ifelse(year < 100, year + 1900, year))) |>
   mutate(month = month.name[as.integer(month)]) |>
-  arrange(year,month) |> 
+  arrange(year,month) |>
   select(year, month, everything(), -day)
-
 ```
 
 
 ```{r}
 unemployment_df=
   read_csv("data/unemployment.csv") |> 
-  janitor::clean_names()
-
-
+  janitor::clean_names() |> 
+  pivot_longer(
+    cols = jan:dec,
+    names_to = "month",
+    values_to = "unemployment")
 
 ```
+
+```{r}
+pols_df = pols_df |> mutate(year = as.numeric(year))
+snp_df = snp_df  |> mutate(year = as.numeric(year))
+unemployment_df = unemployment_df |> mutate(year = as.numeric(year))
+
+```
+
+
+Join datasets
+
+```{r}
+full_df = pols_df |> 
+  left_join(snp_df, by = c ("year", "month")) |>
+  left_join(unemployment_df, by = c ("year", "month"))
+
+```
+
+
+The data given to use: pols-month, has political information for parties in power; snp, has stock market information and unemployment has monthly unemployment rates. After merging into full_df it now shows a combined analysis of political, financial, and labor trends over time.
 
 
 
