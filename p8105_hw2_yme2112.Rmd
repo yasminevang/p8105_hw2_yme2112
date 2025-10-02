@@ -19,7 +19,7 @@ pols_df=
   read_csv("data/pols-month.csv") |> 
   janitor::clean_names() |> 
   separate(mon, into = c("year","month","day")) |>
-  mutate(month = month.name[c(1)]) |> 
+  mutate(month = month.name[as.integer(month)]) |> 
   mutate(president = if_else(prez_dem == 1, "dem","gop")) |> 
   select(-prez_dem, -prez_gop, -day)
   
@@ -30,10 +30,11 @@ pols_df=
 ```{r}
 snp_df=
   read_csv("data/snp.csv") |> 
-  janitor::clean_names()
-
-
-
+  janitor::clean_names()|> 
+  separate(date, into = c("year","month","day")) |>
+  mutate(month = month.name[as.integer(month)]) |>
+  arrange(year,month) |> 
+  select(year, month, everything(), -day)
 
 ```
 
